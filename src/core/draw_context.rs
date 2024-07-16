@@ -1,6 +1,6 @@
 use image::{ColorType, ImageBuffer, Pixel};
 use crate::core::component::Component;
-use crate::core::size::Size;
+use crate::core::edge_insets::EdgeInsets;
 
 pub struct DrawContext<P: Pixel> {
     pub color_type: ColorType,
@@ -9,27 +9,42 @@ pub struct DrawContext<P: Pixel> {
     pub height: u32,
     pub width: u32,
 
-    pub new_buffer: ImageBuffer<P, Vec<P::Subpixel>>,
+    pub buffer_layer: ImageBuffer<P, Vec<P::Subpixel>>,
 }
 
 impl <P: Pixel> DrawContext<P> {
-    pub(crate) fn child(&self, component: &Box<dyn Component<P>>) -> DrawContext<P> {
-        let padding = component.padding();
-        let new_abs_pos = (self.absolute_position.0 + padding.left, self.absolute_position.1 + padding.top);
-
-        let (width, height) = match component.size() {
-            Size::Constant(width, height) => (width, height),
-            Size::Maximized => (self.width - padding.left - padding.right, self.height - padding.top - padding.bottom),
-            Size::Minimized => panic!("Size::Minimized is not implemented")
-        };
+    // `this` should be a content context of the current component
+    pub fn child(&self, child: &Box<dyn Component<P>>) -> DrawContext<P> {
+        let (width, height) = child.resolve_collision_size((self.width, self.height));
 
         DrawContext {
-                color_type: self.color_type,
-                absolute_position: new_abs_pos,
-                original_size: self.original_size,
-                width,
-                height,
-                new_buffer: ImageBuffer::new(width, height)
+            color_type: self.color_type,
+            absolute_position: self.absolute_position,
+            original_size: self.original_size,
+            width,
+            height,
+            buffer_layer: ImageBuffer::new(width, height)
         }
+    }
+
+    pub fn narrow(&self, edge_insets: &EdgeInsets) -> DrawContext<P> {
+        let new_abs_pos = (self.absolute_position.0 + edge_insets.left, self.absolute_position.1 + edge_insets.top);
+
+        let width = self.width - edge_insets.left - edge_insets.right;
+        let height = self.height - edge_insets.top - edge_insets.bottom;
+
+        DrawContext {
+            color_type: self.color_type,
+            absolute_position: new_abs_pos,
+            original_size: self.original_size,
+            width,
+            height,
+            buffer_layer: ImageBuffer::new(width, height)
+        }
+    }
+
+    pub fn overlay(&mut self, child_context: &DrawContext<P>) {
+        let relative_pos = (child_context.absolute_position.0 - self.absolute_position.0, child_context.absolute_position.1 - self.absolute_position.1);
+        image::imageops::overlay(&mut self.buffer_layer, &child_context.buffer_layer, relative_pos.0 as i64, relative_pos.1 as i64);
     }
 }
