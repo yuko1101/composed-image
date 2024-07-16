@@ -12,16 +12,16 @@ mod tests {
         struct TestComponent2;
         impl Component<Rgba<u8>> for TestComponent2 {
             fn padding(&self) -> Padding {
-                Padding::zero()
+                Padding::all(5)
             }
 
             fn size(&self) -> Size {
-                Size::Constant(10, 30)
+                Size::Maximized
             }
 
             fn draw(&self, context: &mut DrawContext<Rgba<u8>>) {
-                let mut b = &mut context.new_buffer;
-                for (x, y, pixel) in b.enumerate_pixels_mut() {
+                let b = &mut context.new_buffer;
+                for (_, _, pixel) in b.enumerate_pixels_mut() {
                     *pixel = Rgba([255, 0, 0, 255]);
                 }
             }
@@ -38,8 +38,8 @@ mod tests {
             }
 
             fn draw(&self, context: &mut DrawContext<Rgba<u8>>) {
-                let mut b = &mut context.new_buffer;
-                for (x, y, pixel) in b.enumerate_pixels_mut() {
+                let b = &mut context.new_buffer;
+                for (_, _, pixel) in b.enumerate_pixels_mut() {
                     *pixel = Rgba([0, 0, 255, 255]);
                 }
 
@@ -55,9 +55,9 @@ mod tests {
             color_type: ColorType::Rgb8,
             absolute_position: (0, 0),
             original_size: (20, 40),
-            height: 40,
             width: 20,
-            new_buffer: image::ImageBuffer::new(40, 20),
+            height: 40,
+            new_buffer: image::ImageBuffer::new(20, 40),
         };
 
         base_component.draw(&mut draw_context);
