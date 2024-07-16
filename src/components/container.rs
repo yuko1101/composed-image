@@ -3,7 +3,6 @@ use crate::core::component::Component;
 use crate::core::draw_context::DrawContext;
 use crate::core::edge_insets::EdgeInsets;
 use crate::core::size::Size;
-use crate::core::util::overlay;
 
 pub struct Container<P: Pixel> {
     pub padding: EdgeInsets,
@@ -28,12 +27,12 @@ impl<P: Pixel> Component<P> for Container<P> {
 
     fn draw_content(&self, context: &mut DrawContext<P>) {
         if let Some(child) = &self.child {
-            overlay(child, context);
+            context.draw_child(child);
         }
     }
 
     fn draw_background(&self, context: &mut DrawContext<P>) {
-        for (_, _, pixel) in &mut context.buffer_layer.enumerate_pixels_mut() {
+        for (_, _, pixel) in &mut context.image_buffer.enumerate_pixels_mut() {
             *pixel = self.background.color;
         }
     }
@@ -46,7 +45,7 @@ impl<P: Pixel> Component<P> for Container<P> {
         }
     }
 
-    fn resolve_children_size(&self, area: (u32, u32)) -> (u32, u32) {
+    fn resolve_children_size(&self, area: Option<(u32, u32)>) -> (u32, u32) {
         if let Some(child) = &self.child {
             child.resolve_collision_size(area)
         } else {

@@ -9,13 +9,13 @@ pub struct DrawContext<P: Pixel> {
     pub height: u32,
     pub width: u32,
 
-    pub buffer_layer: ImageBuffer<P, Vec<P::Subpixel>>,
+    pub image_buffer: ImageBuffer<P, Vec<P::Subpixel>>,
 }
 
 impl <P: Pixel> DrawContext<P> {
     // `this` should be a content context of the current component
     pub fn child(&self, child: &Box<dyn Component<P>>) -> DrawContext<P> {
-        let (width, height) = child.resolve_collision_size((self.width, self.height));
+        let (width, height) = child.resolve_collision_size(Some((self.width, self.height)));
 
         DrawContext {
             color_type: self.color_type,
@@ -23,7 +23,7 @@ impl <P: Pixel> DrawContext<P> {
             original_size: self.original_size,
             width,
             height,
-            buffer_layer: ImageBuffer::new(width, height)
+            image_buffer: ImageBuffer::new(width, height)
         }
     }
 
@@ -39,12 +39,18 @@ impl <P: Pixel> DrawContext<P> {
             original_size: self.original_size,
             width,
             height,
-            buffer_layer: ImageBuffer::new(width, height)
+            image_buffer: ImageBuffer::new(width, height)
         }
     }
 
     pub fn overlay(&mut self, child_context: &DrawContext<P>) {
         let relative_pos = (child_context.absolute_position.0 - self.absolute_position.0, child_context.absolute_position.1 - self.absolute_position.1);
-        image::imageops::overlay(&mut self.buffer_layer, &child_context.buffer_layer, relative_pos.0 as i64, relative_pos.1 as i64);
+        image::imageops::overlay(&mut self.image_buffer, &child_context.image_buffer, relative_pos.0 as i64, relative_pos.1 as i64);
+    }
+
+    pub fn draw_child(&mut self, child: &Box<dyn Component<P>>) {
+        let mut child_context = self.child(&child);
+        child.draw_component(&mut child_context);
+        image::imageops::overlay(&mut self.image_buffer, &child_context.image_buffer, child_context.absolute_position.0 as i64, child_context.absolute_position.1 as i64);
     }
 }

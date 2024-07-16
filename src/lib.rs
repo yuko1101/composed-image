@@ -30,17 +30,9 @@ mod tests {
             },
 
         });
-        let mut draw_context: DrawContext<Rgba<u8>> = DrawContext {
-            color_type: ColorType::Rgb8,
-            absolute_position: (0, 0),
-            original_size: (40, 60),
-            width: 40,
-            height: 60,
-            buffer_layer: image::ImageBuffer::new(40, 60),
-        };
 
-        base_component.draw_component(&mut draw_context);
+        let ctx: DrawContext<Rgba<u8>> = base_component.start_draw(ColorType::Rgba8);
 
-        draw_context.buffer_layer.save("test.png").unwrap();
+        ctx.image_buffer.save("test.png").unwrap();
     }
 }
