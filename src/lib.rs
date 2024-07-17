@@ -4,27 +4,43 @@ pub mod components;
 #[cfg(test)]
 mod tests {
     use image::{ColorType, Rgba};
+    use crate::components::column::Column;
     use crate::core::{component::Component, edge_insets::EdgeInsets, size::Size, draw_context::DrawContext};
     use crate::components::container::{Container, ContainerBackground};
-    use crate::core::size::Size::Constant;
 
     #[test]
     fn it_works() {
-        let child = Container {
+        let child1 = Container {
             padding: EdgeInsets::zero(),
             margin: EdgeInsets::all(5),
-            size: Size::Maximized,
+            size: Size::Constant(20, 40),
             child: None,
             background: ContainerBackground {
                 color: Rgba([255, 0, 0, 255]),
             },
         };
 
+        let child2 = Container {
+            padding: EdgeInsets::zero(),
+            margin: EdgeInsets::all(5),
+            size: Size::Maximized,
+            child: None,
+            background: ContainerBackground {
+                color: Rgba([0, 0, 255, 255]),
+            },
+        };
+
+        let col = Column {
+            padding: EdgeInsets::zero(),
+            margin: EdgeInsets::zero(),
+            children: vec![Box::new(child1), Box::new(child2)],
+        };
+
         let base_component = Box::new(Container {
             padding: EdgeInsets::zero(),
             margin: EdgeInsets::zero(),
-            size: Constant(40, 60),
-            child: Some(Box::new(child)),
+            size: Size::Constant(40, 60),
+            child: Some(Box::new(col)),
             background: ContainerBackground {
                 color: Rgba([0, 255, 0, 255]),
             },

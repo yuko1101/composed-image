@@ -12,14 +12,18 @@ pub struct DrawContext<P: Pixel> {
     pub image_buffer: ImageBuffer<P, Vec<P::Subpixel>>,
 }
 
-impl <P: Pixel> DrawContext<P> {
+impl<P: Pixel> DrawContext<P> {
     // `this` should be a content context of the current component
     pub fn child(&self, child: &Box<dyn Component<P>>) -> DrawContext<P> {
-        let (width, height) = child.resolve_collision_size(Some((self.width, self.height)));
+        self.custom_child(child, (self.width, self.height), self.absolute_position)
+    }
+
+    pub fn custom_child(&self, child: &Box<dyn Component<P>>, area: (u32, u32), absolute_position: (u32, u32)) -> DrawContext<P> {
+        let (width, height) = child.resolve_collision_size(Some(area));
 
         DrawContext {
             color_type: self.color_type,
-            absolute_position: self.absolute_position,
+            absolute_position,
             original_size: self.original_size,
             width,
             height,
