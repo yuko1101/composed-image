@@ -1,7 +1,7 @@
 use image::{ColorType, Pixel};
 use crate::core::draw_context::DrawContext;
 use crate::core::edge_insets::EdgeInsets;
-use crate::core::size::Size;
+use crate::core::size::{Constraint, Size};
 
 /*
 content size (children size): (width, height)
@@ -19,7 +19,10 @@ pub trait Component<P: Pixel> {
     }
 
     fn content_size(&self) -> Size {
-        Size::Maximized
+        Size {
+            width: Constraint::Maximized,
+            height: Constraint::Maximized,
+        }
     }
 
     fn draw_content(&self, context: &mut DrawContext<P>);
@@ -49,18 +52,36 @@ pub trait Component<P: Pixel> {
     }
 
     fn resolve_content_size(&self, area: Option<(u32, u32)>) -> (u32, u32) {
-        match self.content_size() {
-            Size::Constant(width, height) => (width, height),
-            Size::Maximized => {
+        let size = self.content_size();
+        (self.resolve_constraint(&size.width, area, true), self.resolve_constraint(&size.height, area, false))
+    }
+
+    fn resolve_constraint(&self, constraint: &Constraint, area: Option<(u32, u32)>, is_horizontal: bool) -> u32 {
+        match constraint {
+            Constraint::Maximized => {
                 if area.is_none() {
                     panic!("Maximized component must have a parent size");
                 }
                 let area = area.unwrap();
                 let margin = self.margin();
                 let padding = self.padding();
-                (area.0 - margin.left - margin.right - padding.left - padding.right, area.1 - margin.top - margin.bottom - padding.top - padding.bottom)
+
+                if is_horizontal {
+                    area.0 - margin.left - margin.right - padding.left - padding.right
+                } else {
+                    area.1 - margin.top - margin.bottom - padding.top - padding.bottom
+                }
+
             },
-            Size::Minimized => self.resolve_children_size(area),
+            Constraint::Minimized => {
+                let children_size = self.resolve_children_size(area);
+                if is_horizontal {
+                    children_size.1
+                } else {
+                    children_size.0
+                }
+            },
+            Constraint::Constant(value) => *value,
         }
     }
 

@@ -2,10 +2,12 @@ use image::Pixel;
 use crate::core::component::Component;
 use crate::core::draw_context::DrawContext;
 use crate::core::edge_insets::EdgeInsets;
+use crate::core::size::Size;
 
 pub struct Column<P: Pixel> {
     pub padding: EdgeInsets,
     pub margin: EdgeInsets,
+    pub size: Size,
     pub children: Vec<Box<dyn Component<P>>>,
 }
 
@@ -16,6 +18,10 @@ impl<P: Pixel> Component<P> for Column<P> {
 
     fn margin(&self) -> EdgeInsets {
         self.margin
+    }
+
+    fn content_size(&self) -> Size {
+        self.size
     }
     
     fn draw_content(&self, context: &mut DrawContext<P>) {

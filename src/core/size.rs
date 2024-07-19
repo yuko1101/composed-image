@@ -1,6 +1,12 @@
 #[derive(Copy, Clone)]
-pub enum Size {
+pub struct Size {
+    pub width: Constraint,
+    pub height: Constraint,
+}
+
+#[derive(Copy, Clone)]
+pub enum Constraint {
     Maximized,
     Minimized,
-    Constant(u32, u32),
+    Constant(u32),
 }
