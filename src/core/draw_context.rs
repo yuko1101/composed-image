@@ -57,4 +57,9 @@ impl<P: Pixel> DrawContext<P> {
         child.draw_component(&mut child_context);
         image::imageops::overlay(&mut self.image_buffer, &child_context.image_buffer, child_context.absolute_position.0 as i64, child_context.absolute_position.1 as i64);
     }
+
+    pub fn move_offset(&mut self, offset: (u32, u32)) {
+        self.absolute_position.0 += offset.0;
+        self.absolute_position.1 += offset.1;
+    }
 }

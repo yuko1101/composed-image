@@ -4,7 +4,7 @@ pub struct Size {
     pub height: Constraint,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Constraint {
     Maximized,
     Minimized,
