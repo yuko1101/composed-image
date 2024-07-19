@@ -76,9 +76,9 @@ pub trait Component<P: Pixel> {
             Constraint::Minimized => {
                 let children_size = self.resolve_children_size(area);
                 if is_horizontal {
-                    children_size.1
-                } else {
                     children_size.0
+                } else {
+                    children_size.1
                 }
             },
             Constraint::Constant(value) => *value,
