@@ -5,8 +5,8 @@ pub mod components;
 mod tests {
     use image::{ColorType, Rgba};
 
-    use crate::components::column::Column;
     use crate::components::container::{Container, ContainerBackground};
+    use crate::components::row::Row;
     use crate::core::{component::Component, draw_context::DrawContext, edge_insets::EdgeInsets, size::Size};
     use crate::core::size::Constraint;
 
@@ -17,7 +17,7 @@ mod tests {
             margin: EdgeInsets::all(5),
             size: Size {
                 width: Constraint::Maximized,
-                height: Constraint::Constant(20),
+                height: Constraint::Constant(50),
             },
             child: None,
             background: ContainerBackground {
@@ -29,8 +29,8 @@ mod tests {
             padding: EdgeInsets::zero(),
             margin: EdgeInsets::all(5),
             size: Size {
-                width: Constraint::Constant(40),
-                height: Constraint::Maximized,
+                width: Constraint::Constant(10),
+                height: Constraint::Constant(20),
             },
             child: None,
             background: ContainerBackground {
@@ -38,12 +38,12 @@ mod tests {
             },
         };
 
-        let col = Column {
+        let row = Row {
             padding: EdgeInsets::zero(),
             margin: EdgeInsets::zero(),
             size: Size {
-                width: Constraint::Maximized,
-                height: Constraint::Maximized,
+                width: Constraint::Constant(100),
+                height: Constraint::Minimized,
             },
             children: vec![Box::new(child1), Box::new(child2)],
         };
@@ -53,11 +53,11 @@ mod tests {
             margin: EdgeInsets::zero(),
             size: Size {
                 width: Constraint::Constant(100),
-                height: Constraint::Constant(100),
+                height: Constraint::Minimized,
             },
-            child: Some(Box::new(col)),
+            child: Some(Box::new(row)),
             background: ContainerBackground {
-                color: Rgba([0, 255, 0, 255]),
+                color: Rgba([0, 100, 0, 255]),
             },
 
         });

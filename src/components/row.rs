@@ -1,8 +1,11 @@
 use image::Pixel;
+use crate::core::area::{Area, area, Axis, OptionArea};
 use crate::core::component::Component;
 use crate::core::draw_context::DrawContext;
 use crate::core::edge_insets::EdgeInsets;
+use crate::core::pos::pos;
 use crate::core::size::{Constraint, Size};
+use crate::core::util;
 
 pub struct Row<P: Pixel> {
     pub padding: EdgeInsets,
@@ -25,32 +28,16 @@ impl<P: Pixel> Component<P> for Row<P> {
     }
 
     fn draw_content(&self, context: &mut DrawContext<P>) {
-        let mut drawed: Vec<DrawContext<P>> = vec![];
+        let allocated = util::allocate_area(context.area, Axis::Horizontal, &self.children);
 
-        // draw children
-        let mut remaining_width = context.width;
-        for child in self.children.iter().filter(|c| c.content_size().width != Constraint::Maximized){
-            // TODO: fix absolute position if possible, this causes passing wrong absolute position to children
-            let mut child_context = context.custom_child(child, (remaining_width, context.height), context.absolute_position);
+        let mut offset = 0;
+        for (i, child) in self.children.iter().enumerate() {
+            let abs_pos = pos![offset, 0];
+            let mut child_context = context.with_size(allocated[i]);
+            child_context.move_offset(abs_pos);
             child.draw_component(&mut child_context);
-            remaining_width -= child_context.width;
-            drawed.push(child_context);
-        }
-
-        for (i, child) in self.children.iter().enumerate().filter(|(_, c)| c.content_size().width == Constraint::Maximized) {
-            // TODO: fix absolute position if possible, this causes passing wrong absolute position to children
-            let mut child_context = context.custom_child(child, (remaining_width, context.height), context.absolute_position);
-            child.draw_component(&mut child_context);
-            remaining_width -= child_context.width;
-            drawed.insert(i, child_context);
-        }
-
-        // overlay children
-        let mut x = 0;
-        for mut child_context in drawed {
-            child_context.move_offset((x, 0));
-            x += child_context.width;
             context.overlay(&child_context);
+            offset += allocated[i].width as i32;
         }
     }
 
@@ -61,27 +48,29 @@ impl<P: Pixel> Component<P> for Row<P> {
         self.children.iter().collect::<Vec<_>>()
     }
 
-    fn resolve_children_size(&self, mut area: Option<(u32, u32)>) -> (u32, u32) {
+    fn resolve_children_size(&self, mut area: OptionArea) -> Area {
         let mut width = 0;
         let mut height = 0;
         for child in self.children.iter().filter(|c| c.content_size().width != Constraint::Maximized){
-            let (child_width, child_height) = child.resolve_collision_size(area.clone());
-            width += child_width;
-            height = height.max(child_height);
-            if let Some(area) = area.as_mut() {
-                area.0 -= child_width;
+            let child_size = child.resolve_collision_size(area.clone());
+            width += child_size.width;
+            height = height.max(child_size.height);
+            if let Some(w) = area.width.as_mut() {
+                *w -= child_size.width;
             }
         }
 
-        for child in self.children.iter().filter(|c| c.content_size().width == Constraint::Maximized){
-            let (child_width, child_height) = child.resolve_collision_size(area.clone());
-            width += child_width;
-            height = height.max(child_height);
-            if let Some(area) = area.as_mut() {
-                area.0 -= child_width;
+        let maximized_list = self.children.iter().filter(|c| c.content_size().width == Constraint::Maximized).collect::<Vec<_>>();
+
+        for child in maximized_list {
+            let child_size = child.resolve_collision_size(area.clone());
+            width += child_size.width;
+            height = height.max(child_size.height);
+            if let Some(w) = area.width.as_mut() {
+                *w -= child_size.width;
             }
         }
 
-        (width, height)
+        area!(width, height)
     }
 }

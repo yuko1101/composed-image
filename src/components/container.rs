@@ -1,4 +1,5 @@
 use image::Pixel;
+use crate::core::area::{Area, area, OptionArea};
 use crate::core::component::Component;
 use crate::core::draw_context::DrawContext;
 use crate::core::edge_insets::EdgeInsets;
@@ -45,11 +46,11 @@ impl<P: Pixel> Component<P> for Container<P> {
         }
     }
 
-    fn resolve_children_size(&self, area: Option<(u32, u32)>) -> (u32, u32) {
+    fn resolve_children_size(&self, area: OptionArea) -> Area {
         if let Some(child) = &self.child {
             child.resolve_collision_size(area)
         } else {
-            (0, 0)
+            area!(0, 0)
         }
     }
 }
