@@ -1,5 +1,6 @@
 use image::{ColorType, ImageBuffer, Pixel};
-use crate::core::area::{Area, area};
+
+use crate::core::area::{Area, area, Axis, OptionArea};
 use crate::core::component::Component;
 use crate::core::edge_insets::EdgeInsets;
 use crate::core::pos::{Pos, pos};
@@ -16,18 +17,19 @@ pub struct DrawContext<P: Pixel> {
 impl<P: Pixel> DrawContext<P> {
     // `this` should be a content context of the current component
     pub fn child(&self, child: &Box<dyn Component<P>>) -> DrawContext<P> {
-        self.custom_child(child, self.area)
+        self.custom_child(child, self.area.into_option())
     }
 
-    pub fn custom_child(&self, child: &Box<dyn Component<P>>, area: Area) -> DrawContext<P> {
-        let child_size = child.resolve_collision_size(area.into_option());
+    pub fn custom_child(&self, child: &Box<dyn Component<P>>, area: OptionArea) -> DrawContext<P> {
+        let child_width = child.resolve_collision_size(area.get_axis(Axis::Horizontal));
+        let child_height = child.resolve_collision_size(area.get_axis(Axis::Vertical));
 
         DrawContext {
             color_type: self.color_type,
             abs_pos: self.abs_pos,
             original_size: self.original_size,
-            area: child_size,
-            image_buffer: ImageBuffer::new(child_size.width, child_size.height)
+            area: area![child_width, child_height],
+            image_buffer: ImageBuffer::new(child_width, child_height)
         }
     }
 

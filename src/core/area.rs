@@ -137,6 +137,7 @@ impl SingleAxisArea {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 pub struct OptionSingleAxisArea {
     pub main_axis: Option<u32>,
     pub axis: Axis,

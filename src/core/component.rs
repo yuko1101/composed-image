@@ -1,5 +1,6 @@
 use image::{ColorType, Pixel};
-use crate::core::area::{area, Area, Axis, OptionArea, OptionSingleAxisArea};
+
+use crate::core::area::{area, Axis, OptionSingleAxisArea};
 use crate::core::draw_context::DrawContext;
 use crate::core::edge_insets::EdgeInsets;
 use crate::core::pos::pos;
@@ -39,24 +40,24 @@ pub trait Component<P: Pixel> {
         collusion_context.overlay(&content_context);
     }
 
-    fn resolve_collision_size(&self, area: OptionArea) -> Area {
+    fn resolve_collision_size(&self, area: OptionSingleAxisArea) -> u32 {
         let visual_size = self.resolve_visual_size(area);
         let margin = self.margin();
-        area!(visual_size.width + margin.left + margin.right, visual_size.height + margin.top + margin.bottom)
+        visual_size + margin.sum_axis(area.axis)
     }
 
-    fn resolve_visual_size(&self, area: OptionArea) -> Area {
+    fn resolve_visual_size(&self, area: OptionSingleAxisArea) -> u32 {
         let content_size = self.resolve_content_size(area);
         let padding = self.padding();
-        area!(content_size.width + padding.left + padding.right, content_size.height + padding.top + padding.bottom)
+        content_size + padding.sum_axis(area.axis)
     }
 
-    fn resolve_content_size(&self, area: OptionArea) -> Area {
+    fn resolve_content_size(&self, area: OptionSingleAxisArea) -> u32 {
         let size = self.content_size();
-        area!(self.resolve_constraint(&size.width, area.get_axis(Axis::Horizontal)), self.resolve_constraint(&size.height, area.get_axis(Axis::Vertical)))
+        self.resolve_constraint(size.get_axis(area.axis), area)
     }
 
-    fn resolve_constraint(&self, constraint: &Constraint, area: OptionSingleAxisArea) -> u32 {
+    fn resolve_constraint(&self, constraint: Constraint, area: OptionSingleAxisArea) -> u32 {
         match constraint {
             Constraint::Maximized => {
                 if area.main_axis.is_none() {
@@ -68,19 +69,18 @@ pub trait Component<P: Pixel> {
 
                 area.main_axis - margin.sum_axis(area.axis) - padding.sum_axis(area.axis)
             },
-            Constraint::Minimized => {
-                let children_size = self.resolve_children_size(area.dummy());
-                children_size.single_axis(area.axis).main_axis
-            },
-            Constraint::Constant(value) => *value,
+            Constraint::Minimized => self.resolve_children_size(area),
+            Constraint::Constant(value) => value,
         }
     }
 
     fn children(&self) -> Vec<&Box<dyn Component<P>>>;
-    fn resolve_children_size(&self, area: OptionArea) -> Area;
+    fn resolve_children_size(&self, area: OptionSingleAxisArea) -> u32;
 
     fn start_draw(&self, color_type: ColorType) -> DrawContext<P> {
-        let area = self.resolve_collision_size(OptionArea::none());
+        let width = self.resolve_collision_size(OptionSingleAxisArea::none(Axis::Horizontal));
+        let height = self.resolve_collision_size(OptionSingleAxisArea::none(Axis::Vertical));
+        let area = area![width, height];
         let mut collision_context = DrawContext {
             color_type,
             abs_pos: pos![0, 0],
