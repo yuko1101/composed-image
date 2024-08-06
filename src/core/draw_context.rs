@@ -8,7 +8,7 @@ use crate::core::pos::{Pos, pos};
 pub struct DrawContext<P: Pixel> {
     pub color_type: ColorType,
     pub abs_pos: Pos,
-    pub original_size: Area,
+    pub original_area: Area,
     pub area: Area,
 
     pub image_buffer: ImageBuffer<P, Vec<P::Subpixel>>,
@@ -27,17 +27,17 @@ impl<P: Pixel> DrawContext<P> {
         DrawContext {
             color_type: self.color_type,
             abs_pos: self.abs_pos,
-            original_size: self.original_size,
+            original_area: self.original_area,
             area: area![child_width, child_height],
             image_buffer: ImageBuffer::new(child_width, child_height)
         }
     }
 
-    pub fn with_size(&self, area: Area) -> DrawContext<P> {
+    pub fn with_area(&self, area: Area) -> DrawContext<P> {
         DrawContext {
             color_type: self.color_type,
             abs_pos: self.abs_pos,
-            original_size: self.original_size,
+            original_area: self.original_area,
             area,
             image_buffer: ImageBuffer::new(area.width, area.height)
         }
@@ -53,7 +53,7 @@ impl<P: Pixel> DrawContext<P> {
         DrawContext {
             color_type: self.color_type,
             abs_pos: new_abs_pos,
-            original_size: self.original_size,
+            original_area: self.original_area,
             area: area![width, height],
             image_buffer: ImageBuffer::new(width, height)
         }

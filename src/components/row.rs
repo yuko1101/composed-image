@@ -5,13 +5,13 @@ use crate::core::component::Component;
 use crate::core::draw_context::DrawContext;
 use crate::core::edge_insets::EdgeInsets;
 use crate::core::pos::pos;
-use crate::core::size::{Constraint, Size};
+use crate::core::constraint::{Constraint, AreaConstraint};
 use crate::core::util;
 
 pub struct Row<P: Pixel> {
     pub padding: EdgeInsets,
     pub margin: EdgeInsets,
-    pub size: Size,
+    pub constraint: AreaConstraint,
     pub children: Vec<Box<dyn Component<P>>>,
 }
 
@@ -24,8 +24,8 @@ impl<P: Pixel> Component<P> for Row<P> {
         self.margin
     }
 
-    fn content_size(&self) -> Size {
-        self.size
+    fn constraint(&self) -> AreaConstraint {
+        self.constraint
     }
 
     fn draw_content(&self, context: &mut DrawContext<P>) {
@@ -35,7 +35,7 @@ impl<P: Pixel> Component<P> for Row<P> {
         for (i, child) in self.children.iter().enumerate() {
             let abs_pos = pos![offset, 0];
             let child_cross_axis = child.resolve_collision_size(context.area.into_option().get_axis(Axis::Vertical));
-            let mut child_context = context.with_size(area![allocated[i], child_cross_axis]);
+            let mut child_context = context.with_area(area![allocated[i], child_cross_axis]);
             child_context.move_offset(abs_pos);
             child.draw_component(&mut child_context);
             context.overlay(&child_context);
@@ -52,17 +52,17 @@ impl<P: Pixel> Component<P> for Row<P> {
 
     fn resolve_children_size(&self, mut area: OptionSingleAxisArea) -> u32 {
         let mut size = 0;
-        for child in self.children.iter().filter(|c| c.content_size().width != Constraint::Maximized){
+        for child in self.children.iter().filter(|c| c.constraint().width != Constraint::Maximized){
             let child_size = child.resolve_collision_size(area.clone());
             if area.axis == Axis::Vertical {
                 size = size.max(child_size);
             } else {
                 size += child_size;
-                area.main_axis.as_mut().map(|a| *a -= child_size);
+                area.size.as_mut().map(|a| *a -= child_size);
             }
         }
 
-        let maximized_list = self.children.iter().filter(|c| c.content_size().width == Constraint::Maximized).collect::<Vec<_>>();
+        let maximized_list = self.children.iter().filter(|c| c.constraint().width == Constraint::Maximized).collect::<Vec<_>>();
 
         for child in maximized_list {
             let child_size = child.resolve_collision_size(area.clone());
@@ -70,7 +70,7 @@ impl<P: Pixel> Component<P> for Row<P> {
                 size = size.max(child_size);
             } else {
                 size += child_size;
-                area.main_axis.as_mut().map(|a| *a -= child_size);
+                area.size.as_mut().map(|a| *a -= child_size);
             }
         }
 

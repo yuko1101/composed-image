@@ -7,15 +7,15 @@ mod tests {
 
     use crate::components::container::{Container, ContainerBackground};
     use crate::components::row::Row;
-    use crate::core::{component::Component, draw_context::DrawContext, edge_insets::EdgeInsets, size::Size};
-    use crate::core::size::Constraint;
+    use crate::core::{component::Component, draw_context::DrawContext, edge_insets::EdgeInsets, constraint::AreaConstraint};
+    use crate::core::constraint::Constraint;
 
     #[test]
     fn it_works() {
         let child1 = Container {
             padding: EdgeInsets::zero(),
             margin: EdgeInsets::all(5),
-            size: Size {
+            constraint: AreaConstraint {
                 width: Constraint::Maximized,
                 height: Constraint::Constant(50),
             },
@@ -28,7 +28,7 @@ mod tests {
         let child2 = Container {
             padding: EdgeInsets::zero(),
             margin: EdgeInsets::all(5),
-            size: Size {
+            constraint: AreaConstraint {
                 width: Constraint::Constant(10),
                 height: Constraint::Constant(20),
             },
@@ -41,7 +41,7 @@ mod tests {
         let row = Row {
             padding: EdgeInsets::zero(),
             margin: EdgeInsets::zero(),
-            size: Size {
+            constraint: AreaConstraint {
                 width: Constraint::Constant(100),
                 height: Constraint::Minimized,
             },
@@ -51,7 +51,7 @@ mod tests {
         let base_component = Box::new(Container {
             padding: EdgeInsets::zero(),
             margin: EdgeInsets::zero(),
-            size: Size {
+            constraint: AreaConstraint {
                 width: Constraint::Constant(100),
                 height: Constraint::Minimized,
             },

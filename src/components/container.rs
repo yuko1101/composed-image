@@ -4,12 +4,12 @@ use crate::core::area::OptionSingleAxisArea;
 use crate::core::component::Component;
 use crate::core::draw_context::DrawContext;
 use crate::core::edge_insets::EdgeInsets;
-use crate::core::size::Size;
+use crate::core::constraint::AreaConstraint;
 
 pub struct Container<P: Pixel> {
     pub padding: EdgeInsets,
     pub margin: EdgeInsets,
-    pub size: Size,
+    pub constraint: AreaConstraint,
     pub child: Option<Box<dyn Component<P>>>,
     pub background: ContainerBackground<P>,
 }
@@ -23,8 +23,8 @@ impl<P: Pixel> Component<P> for Container<P> {
         self.margin
     }
 
-    fn content_size(&self) -> Size {
-        self.size
+    fn constraint(&self) -> AreaConstraint {
+        self.constraint
     }
 
     fn draw_content(&self, context: &mut DrawContext<P>) {

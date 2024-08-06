@@ -30,11 +30,11 @@ impl Area {
     pub fn single_axis(self, axis: Axis) -> SingleAxisArea {
         match axis {
             Axis::Horizontal => SingleAxisArea {
-                main_axis: self.width,
+                size: self.width,
                 axis,
             },
             Axis::Vertical => SingleAxisArea {
-                main_axis: self.height,
+                size: self.height,
                 axis,
             },
         }
@@ -89,11 +89,11 @@ impl OptionArea {
     pub fn get_axis(self, axis: Axis) -> OptionSingleAxisArea {
         match axis {
             Axis::Horizontal => OptionSingleAxisArea {
-                main_axis: self.width,
+                size: self.width,
                 axis,
             },
             Axis::Vertical => OptionSingleAxisArea {
-                main_axis: self.height,
+                size: self.height,
                 axis,
             },
         }
@@ -124,36 +124,27 @@ impl Axis {
 
 #[derive(Clone, Copy, Debug)]
 pub struct SingleAxisArea {
-    pub main_axis: u32,
+    pub size: u32,
     pub axis: Axis,
-}
-
-impl SingleAxisArea {
-    pub fn dummy(&self) -> Area {
-        match self.axis {
-            Axis::Horizontal => area!(self.main_axis, u32::MAX),
-            Axis::Vertical => area!(u32::MAX, self.main_axis),
-        }
-    }
 }
 
 #[derive(Clone, Copy, Debug)]
 pub struct OptionSingleAxisArea {
-    pub main_axis: Option<u32>,
+    pub size: Option<u32>,
     pub axis: Axis,
 }
 
 impl OptionSingleAxisArea {
     pub fn unwrap(self) -> SingleAxisArea {
         SingleAxisArea {
-            main_axis: self.main_axis.unwrap(),
+            size: self.size.unwrap(),
             axis: self.axis,
         }
     }
 
     pub fn none(direction: Axis) -> OptionSingleAxisArea {
         OptionSingleAxisArea {
-            main_axis: None,
+            size: None,
             axis: direction,
         }
     }
@@ -161,12 +152,12 @@ impl OptionSingleAxisArea {
     pub fn dummy(&self) -> OptionArea {
         match self.axis {
             Axis::Horizontal => OptionArea {
-                width: self.main_axis,
+                width: self.size,
                 height: Some(u32::MAX),
             },
             Axis::Vertical => OptionArea {
                 width: Some(u32::MAX),
-                height: self.main_axis,
+                height: self.size,
             },
         }
     }

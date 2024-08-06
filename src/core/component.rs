@@ -4,7 +4,7 @@ use crate::core::area::{area, Axis, OptionSingleAxisArea};
 use crate::core::draw_context::DrawContext;
 use crate::core::edge_insets::EdgeInsets;
 use crate::core::pos::pos;
-use crate::core::size::{Constraint, Size};
+use crate::core::constraint::{Constraint, AreaConstraint};
 
 /*
 content size (children size): (width, height)
@@ -21,8 +21,8 @@ pub trait Component<P: Pixel> {
         EdgeInsets::zero()
     }
 
-    fn content_size(&self) -> Size {
-        Size {
+    fn constraint(&self) -> AreaConstraint {
+        AreaConstraint {
             width: Constraint::Maximized,
             height: Constraint::Maximized,
         }
@@ -53,21 +53,21 @@ pub trait Component<P: Pixel> {
     }
 
     fn resolve_content_size(&self, area: OptionSingleAxisArea) -> u32 {
-        let size = self.content_size();
+        let size = self.constraint();
         self.resolve_constraint(size.get_axis(area.axis), area)
     }
 
     fn resolve_constraint(&self, constraint: Constraint, area: OptionSingleAxisArea) -> u32 {
         match constraint {
             Constraint::Maximized => {
-                if area.main_axis.is_none() {
+                if area.size.is_none() {
                     panic!("Maximized component must have a parent size");
                 }
                 let area = area.unwrap();
                 let margin = self.margin();
                 let padding = self.padding();
 
-                area.main_axis - margin.sum_axis(area.axis) - padding.sum_axis(area.axis)
+                area.size - margin.sum_axis(area.axis) - padding.sum_axis(area.axis)
             },
             Constraint::Minimized => self.resolve_children_size(area),
             Constraint::Constant(value) => value,
@@ -84,7 +84,7 @@ pub trait Component<P: Pixel> {
         let mut collision_context = DrawContext {
             color_type,
             abs_pos: pos![0, 0],
-            original_size: area,
+            original_area: area,
             area,
             image_buffer: image::ImageBuffer::new(area.width, area.height),
         };

@@ -1,14 +1,14 @@
 use crate::core::area::Axis;
 
 #[derive(Copy, Clone)]
-pub struct Size {
+pub struct AreaConstraint {
     pub width: Constraint,
     pub height: Constraint,
 }
 
-impl Size {
-    pub fn new(width: Constraint, height: Constraint) -> Size {
-        Size { width, height }
+impl AreaConstraint {
+    pub fn new(width: Constraint, height: Constraint) -> AreaConstraint {
+        AreaConstraint { width, height }
     }
 
     pub fn get_axis(&self, axis: Axis) -> Constraint {
