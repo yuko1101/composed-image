@@ -5,13 +5,14 @@ use crate::core::component::Component;
 use crate::core::draw_context::DrawContext;
 use crate::core::edge_insets::EdgeInsets;
 use crate::core::constraint::AreaConstraint;
+use crate::core::image_source::ImageSource;
 
 pub struct Container<P: Pixel> {
     pub padding: EdgeInsets,
     pub margin: EdgeInsets,
     pub constraint: AreaConstraint,
     pub child: Option<Box<dyn Component<P>>>,
-    pub background: ContainerBackground<P>,
+    pub background: Option<Box<dyn ImageSource<P>>>,
 }
 
 impl<P: Pixel> Component<P> for Container<P> {
@@ -34,8 +35,8 @@ impl<P: Pixel> Component<P> for Container<P> {
     }
 
     fn draw_background(&self, context: &mut DrawContext<P>) {
-        for (_, _, pixel) in &mut context.image_buffer.enumerate_pixels_mut() {
-            *pixel = self.background.color;
+        if let Some(background) = &self.background {
+            background.draw(context);
         }
     }
 
@@ -54,8 +55,4 @@ impl<P: Pixel> Component<P> for Container<P> {
             0
         }
     }
-}
-
-pub struct ContainerBackground<P: Pixel> {
-    pub color: P,
 }
