@@ -5,10 +5,11 @@ pub mod components;
 mod tests {
     use image::{ColorType, Rgba};
 
-    use crate::components::container::{Container, ContainerBackground};
+    use crate::components::container::Container;
     use crate::components::row::Row;
     use crate::core::{component::Component, draw_context::DrawContext, edge_insets::EdgeInsets, constraint::AreaConstraint};
     use crate::core::constraint::Constraint;
+    use crate::core::image_source::SingleColorSource;
 
     #[test]
     fn it_works() {
@@ -20,9 +21,9 @@ mod tests {
                 height: Constraint::Constant(50),
             },
             child: None,
-            background: ContainerBackground {
+            background: Some(Box::new(SingleColorSource {
                 color: Rgba([255, 0, 0, 255]),
-            },
+            })),
         };
 
         let child2 = Container {
@@ -33,9 +34,9 @@ mod tests {
                 height: Constraint::Constant(20),
             },
             child: None,
-            background: ContainerBackground {
+            background: Some(Box::new(SingleColorSource {
                 color: Rgba([0, 0, 255, 255]),
-            },
+            })),
         };
 
         let row = Row {
@@ -56,9 +57,9 @@ mod tests {
                 height: Constraint::Minimized,
             },
             child: Some(Box::new(row)),
-            background: ContainerBackground {
+            background: Some(Box::new(SingleColorSource {
                 color: Rgba([0, 100, 0, 255]),
-            },
+            })),
 
         });
 

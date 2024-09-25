@@ -67,7 +67,7 @@ impl<P: Pixel> DrawContext<P> {
     pub fn draw_child(&mut self, child: &Box<dyn Component<P>>) {
         let mut child_context = self.child(&child);
         child.draw_component(&mut child_context);
-        image::imageops::overlay(&mut self.image_buffer, &child_context.image_buffer, child_context.abs_pos.x as i64, child_context.abs_pos.y as i64);
+        self.overlay(&child_context);
     }
 
     pub fn move_offset(&mut self, offset: Pos) {

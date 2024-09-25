@@ -41,7 +41,7 @@ impl<P: Pixel> Component<P> for Container<P> {
     }
 
     fn children(&self) -> Vec<&Box<dyn Component<P>>> {
-        return if let Some(child) = &self.child {
+        if let Some(child) = &self.child {
             vec![child]
         } else {
             vec![]
